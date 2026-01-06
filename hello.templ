@@ -1,0 +1,68 @@
+package main
+
+import "github.com/mmcdole/gofeed"
+
+// --- 1. SHARED LAYOUT ---
+templ PageLayout() {
+	<html>
+		<head>
+			<title>My Portfolio</title>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+		</head>
+		<body class="bg-gray-100 font-sans leading-normal tracking-normal" id="main-body">
+            // This is where the specific page content will be injected
+			{ children... }
+		</body>
+	</html>
+}
+
+// --- 2. PAGE 1: SUBSTACK FEED ---
+templ SubstackPage(posts []*gofeed.Item) {
+    @PageLayout() {
+        <div class="container w-full md:max-w-3xl mx-auto pt-20">
+            <h1 class="font-bold text-3xl mb-4">My Substack Feed</h1>
+            
+            <div class="grid gap-4 mb-8">
+                for _, post := range posts {
+                    <div class="bg-white p-6 rounded shadow hover:shadow-lg transition">
+                        <h2 class="text-xl font-bold">{ post.Title }</h2>
+                        <a href={ templ.URL(post.Link) } class="text-blue-500">Read Post &rarr;</a>
+                    </div>
+                }
+            </div>
+
+            // THE NAVIGATION BUTTON
+            // hx-get: Fetches the /hello endpoint
+            // hx-target: Replaces the entire <body> content
+            // hx-push-url: Updates browser URL to /hello (so back button works)
+            <button 
+                hx-get="/hello?city=Austin" 
+                hx-target="#main-body" 
+                hx-push-url="true"
+                class="bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition">
+                Go to Hello Page (Austin) &rarr;
+            </button>
+        </div>
+    }
+}
+
+// --- 3. PAGE 2: HELLO CITY ---
+templ HelloPage(city string) {
+    @PageLayout() {
+        <div class="h-screen flex flex-col items-center justify-center bg-blue-50">
+            <h1 class="text-4xl font-bold text-blue-800 mb-4">Hello from { city }!</h1>
+            
+            <p class="mb-8 text-gray-600">You arrived here via HTMX without a full reload.</p>
+
+            // NAVIGATE BACK
+            <button 
+                hx-get="/" 
+                hx-target="#main-body" 
+                hx-push-url="true"
+                class="underline text-blue-600">
+                &larr; Back to Substack
+            </button>
+        </div>
+    }
+}
